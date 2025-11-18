@@ -7,6 +7,7 @@ from typing import Any
 
 import numpy as np
 from fastapi import UploadFile
+from scripts.score_data import score_shot
 
 try:
     from ultralytics import YOLO 
@@ -14,12 +15,13 @@ except ImportError:
     YOLO = None 
 
 
-@dataclass
-class PoseAnalysisResult:
-    score: float
-    strengths: list[str]
-    weaknesses: list[str]
-    metadata: dict[str, float]
+# Kuan: are we going to make this its own class?
+# @dataclass
+# class PoseAnalysisResult:
+#     score: float
+#     strengths: list[str]
+#     weaknesses: list[str]
+#     metadata: dict[str, float]
 
 
 class PoseEstimatorService:
@@ -56,9 +58,14 @@ class PoseEstimatorService:
         _ = np.array([0.0])  
 
         # Placeholder response
-        return PoseAnalysisResult(
-            score=0.0,
-            strengths=["Consistent release point"],
-            weaknesses=["Incomplete follow-through"],
-            metadata={"frames_analyzed": 0.0},
-        )
+        
+        sample_data = {"elbow_angle":30}
+        return score_shot(sample_data)
+
+        # Kuan: commented out after score_shot implementation
+        # return PoseAnalysisResult(
+        #     score=0.0,
+        #     strengths=["Consistent release point"],
+        #     weaknesses=["Incomplete follow-through"],
+        #     metadata={"frames_analyzed": 0.0},
+        # )
