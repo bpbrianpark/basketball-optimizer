@@ -8,3 +8,5 @@ scikit-learn>=1.5.0
 ultralytics>=8.2.0
 python-multipart>=0.0.9
 ipykernel>=6.29.0
+customtkinter>=5.2.0
+darkdetect>=0.7.0
