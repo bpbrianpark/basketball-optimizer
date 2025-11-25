@@ -1,6 +1,6 @@
-# Basketball Shot Form Optimizer PROJECT
+# Basketball Shot Form Optimizer
 
-Project Flow:
+Project Workflow:
 1. Takes a video of someone shooting a basketball (from a webcam or uploaded file) (typo!)
 2. Uses AI to detect the person's body pose (where their joints are)
 3. Calculates angles between body parts (elbow, wrist, shoulder, etc.)
