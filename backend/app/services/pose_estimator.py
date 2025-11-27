@@ -15,7 +15,6 @@ except ImportError:
     YOLO = None 
 
 
-# Kuan: are we going to make this its own class?
 # @dataclass
 # class PoseAnalysisResult:
 #     score: float
@@ -39,20 +38,20 @@ class PoseEstimatorService:
                 )
             self._model = YOLO(self.model_path)
 
-    async def process_upload(self, video: UploadFile) -> PoseAnalysisResult:
+    async def process_upload(self, video: UploadFile) -> dict:
         """Persist the uploaded file and delegate to main analysis pipeline."""
         temp_path = Path("/tmp") / video.filename
         content = await video.read()
         temp_path.write_bytes(content)
         return self.analyze_video(temp_path)
 
-    def analyze_video(self, video_path: Path) -> PoseAnalysisResult:
+    def analyze_video(self, video_path: Path) -> dict:
         """Run pose estimation and scoring on a video file.
 
         This is a placeholder implementation that should be replaced with the
         real pose extraction and scoring pipeline.
         """
-        self._load_model()
+        # self._load_model()
 
         # TODO: integrate OpenCV
         _ = np.array([0.0])  
