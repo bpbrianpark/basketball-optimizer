@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from backend.app.services.pose_estimator import PoseAnalysisResult, PoseEstimatorService
+from backend.app.services.pose_estimator import PoseEstimatorService
 
 router = APIRouter()
 
@@ -32,8 +32,8 @@ async def analyze_shot(
 
     result = await service.process_upload(video)
     return AnalyzeResponse(
-        score=result.score,
-        strengths=result.strengths,
-        weaknesses=result.weaknesses,
-        metadata=result.metadata,
+        score=result['score'],
+        strengths=result['strengths'],
+        weaknesses=result['weaknesses'],
+        metadata=result['metadata'],
     )
