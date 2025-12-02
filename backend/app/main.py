@@ -8,7 +8,7 @@ def create_app() -> FastAPI:
     """FastAPI application factory."""
     app = FastAPI(title="Basketball Shooting Form Analyzer", version="0.1.0")
 
-    app.include_router(analyze_router.router, prefix="/api/analyze", tags=["analyze"])
+    app.include_router(analyze_router, prefix="/api/analyze", tags=["analyze"])
 
     @app.get("/health", tags=["system"])
     async def health_check() -> dict[str, str]:
