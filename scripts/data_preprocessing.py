@@ -26,3 +26,8 @@ def load_data():
     merged_df.to_csv('../data/processed/merged_data.csv', index=False)
     
     return merged_df
+
+# Splitting data
+def split(df):
+    train_df, test_df = train_test_split(df, test_size=0.2, random_state=42) # 80/20 split
+    return train_df, test_df
