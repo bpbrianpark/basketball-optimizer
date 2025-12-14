@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 
 # Loads features.csv and labels.csv from data directory
 def load_data():
@@ -31,3 +32,8 @@ def load_data():
 def split(df):
     train_df, test_df = train_test_split(df, test_size=0.2, random_state=42) # 80/20 split
     return train_df, test_df
+
+# Loads rf model - default parameters
+def instantiate_model():
+    model = RandomForestClassifier()
+    return model
