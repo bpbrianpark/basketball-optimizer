@@ -1,4 +1,5 @@
 import pandas as pd
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
@@ -72,3 +73,6 @@ def evaluation(model, test_df):
 
 def evaluate_metrics(model, test_df):
     # TODO - get validation accuracy/f1/cm
+    
+def save_model(model):
+    # TODO - save model and json with hyperparameters/information about model
