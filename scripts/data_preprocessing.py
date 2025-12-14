@@ -37,3 +37,14 @@ def split(df):
 def instantiate_model():
     model = RandomForestClassifier()
     return model
+
+# Training model on train_df; target variable is 'is_goal' (MAY CHANGE LATER)
+def train_model(model, train_df):
+    X_train = train_df.drop(columns=['shot_id', 'shot_made'])
+    y_train = train_df['shot_made']
+    
+    print("Starting model training")
+    model.fit(X_train, y_train)
+    print("Model training complete")
+    
+    return model
