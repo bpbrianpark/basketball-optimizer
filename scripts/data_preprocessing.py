@@ -87,8 +87,19 @@ def evaluation(model, test_df):
     
     return predictions, predict_probabililties
 
-def evaluate_metrics(model, test_df):
-    # TODO - get validation accuracy/f1/cm
+def evaluate_metrics(y_true, y_pred):
+    """
+    Evaluates model performance using accuracy, F1 score, and confusion matrix
+    """
+    accuracy = accuracy_score(y_true, y_pred)
+    f1 = f1_score(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred)
+    
+    print(f"Accuracy: {accuracy}")
+    print(f"F1 Score: {f1}")
+    print(f"Confusion Matrix:\n{cm}")
+    
+    return accuracy, f1, cm
     
 def save_model(model):
     # TODO - save model and json with hyperparameters/information about model
