@@ -92,3 +92,7 @@ def evaluate_metrics(model, test_df):
     
 def save_model(model):
     # TODO - save model and json with hyperparameters/information about model
+    
+def preprocess(train_df, test_df):
+    # TODO - any preprocessing steps (scaling, encoding, etc)
+    return train_df, test_df
