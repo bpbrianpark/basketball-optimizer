@@ -4,8 +4,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
-# Loads features.csv and labels.csv from data directory
 def load_data():
+    """
+    Loads features.csv and labels.csv, merges them on 'shot_id', and returns the merged dataframe.
+    """
+    
     # Loading features.csv wtih error handling
     try:
         features_df = pd.read_csv('../data/raw/features.csv')
@@ -30,18 +33,27 @@ def load_data():
     
     return merged_df
 
-# Splitting data
 def split(df):
+    """
+    Splits dataframe into train and test sets (80/20 split)
+    """
+    
     train_df, test_df = train_test_split(df, test_size=0.2, random_state=42) # 80/20 split
     return train_df, test_df
 
-# Loads rf model - default parameters
 def instantiate_model():
+    """
+    Instantiates a RandomForestClassifier model with default parameters.
+    """
+    
     model = RandomForestClassifier()
     return model
 
-# Training model on train_df; target variable is 'is_goal' (MAY CHANGE LATER)
 def train_model(model, train_df):
+    """
+    Trains the provided model using the training dataframe.
+    """
+    
     # Split into X_train and y_train
     X_train = train_df.drop(columns=['shot_id', 'shot_made'])
     y_train = train_df['shot_made']
@@ -53,6 +65,10 @@ def train_model(model, train_df):
     return model
 
 def evaluation(model, test_df):
+    """
+    Evaluates the model on the test dataframe and returns predictions and probabilities.
+    """
+    
     # Split into X_test and y_test
     X_test = test_df.drop(columns=['shot_id', 'shot_made'])
     y_test = test_df['shot_made']
