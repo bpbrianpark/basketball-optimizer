@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
 # Loads features.csv and labels.csv from data directory
 def load_data():
@@ -71,4 +71,4 @@ def evaluation(model, test_df):
     return predictions, predict_probabililties
 
 def evaluate_metrics(model, test_df):
-    # TODO - get validation accuracy/f1
+    # TODO - get validation accuracy/f1/cm
