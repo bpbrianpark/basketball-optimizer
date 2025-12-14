@@ -40,6 +40,7 @@ def instantiate_model():
 
 # Training model on train_df; target variable is 'is_goal' (MAY CHANGE LATER)
 def train_model(model, train_df):
+    # Split into X_train and y_train
     X_train = train_df.drop(columns=['shot_id', 'shot_made'])
     y_train = train_df['shot_made']
     
@@ -48,3 +49,22 @@ def train_model(model, train_df):
     print("Model training complete")
     
     return model
+
+def evaluation(model, test_df):
+    # Split into X_test and y_test
+    X_test = test_df.drop(columns=['shot_id', 'shot_made'])
+    y_test = test_df['shot_made']
+    
+    # predictions + probailities of predictions for positive class
+    predictions = model.predict(X_test)
+    predict_probabililties = model.predict_proba(X_test)
+    
+    # Get positive and negative probabilities - may be useful later
+    pos_prob = predict_probabililties[:, 1]
+    neg_prob = predict_probabililties[:, 0]
+    
+    # Ensure correct shape of predictions and predict_probabilities
+    assert len(predictions) == len(y_test)
+    assert predict_probabililties[0] == len(y_test)
+    
+    return predictions, predict_probabililties
