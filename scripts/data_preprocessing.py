@@ -1,5 +1,7 @@
 import pandas as pd
 import joblib
+import os
+import json
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
@@ -101,8 +103,44 @@ def evaluate_metrics(y_true, y_pred):
     
     return accuracy, f1, cm
     
-def save_model(model):
-    # TODO - save model and json with hyperparameters/information about model
+def save_model(model, X_train, y_train, accuracy, f1):
+    """
+    Saves the trained model to disk using joblib
+    """
+    
+    # Create directory if needed
+    save_dir = 'models'
+    os.makedirs(save_dir, exist_ok=True)
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    model_path = os.path.join(save_dir, f'rf_model.pkl')
+    
+    # Saving mode
+    joblib.dump(model, model_path)
+    print(f"Model saved to {model_path}")
+    
+    try:
+        feature_names = list(X_train.columns)
+    except AttributeError:
+        feature_names = [f"feature_{i}" for i in range(X_train.shape[1])]
+
+    # Metadata logic
+    metadata = {
+        "training_timestamp": datetime.now().isoformat(),
+        "model_type": type(model).__name__,
+        "accuracy": accuracy,
+        "f1_score": f1,
+        "num_samples_trained": len(X_train),
+        "feature_names": feature_names,
+        "hyperparameters": model.get_params()
+    }
+    
+    metadata_path = os.path.join(save_dir, f'model_metadata.json')
+    
+    with open(metadata_path, "w") as f:
+        json.dump(metadata, f, indent=4)
+        
+    print(f"Model metadata saved to {metadata_path}")
     
 def preprocess(train_df, test_df):
     # TODO - any preprocessing steps (scaling, encoding, etc)
