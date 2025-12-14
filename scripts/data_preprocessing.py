@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, f1_score
 
 # Loads features.csv and labels.csv from data directory
 def load_data():
@@ -68,3 +69,6 @@ def evaluation(model, test_df):
     assert predict_probabililties[0] == len(y_test)
     
     return predictions, predict_probabililties
+
+def evaluate_metrics(model, test_df):
+    # TODO - get validation accuracy/f1
