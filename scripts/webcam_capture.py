@@ -220,6 +220,29 @@ class App(ctk.CTk):
     def on_closing(self):
         self.quit_app()
 
+    def _iter_frames(video_path):
+        ''' iterate and return a numpy array of video frames '''
+        cap = cv2.VideoCapture(video_path)
+
+        if (not cap.isOpened()):
+            print(f"Failed to open the video from the video path: {video_path}!")
+            return
+        frames = []
+        print("Start reading video frames")
+        
+        try:
+            while True:
+                ret, frame = cap.read()
+                if (not ret):
+                    break
+                frames.append(frame)
+                print(f"Frame {len(frames)}: shape={frame.shape}")
+            print(f"Video reading ended. Total frames: {len(frames)}.")
+        finally:
+            cap.release()
+
+        return np.array(frames)
+
 def main():
     app = App()
     app.start_video()
