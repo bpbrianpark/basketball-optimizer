@@ -142,6 +142,24 @@ def save_model(model, X_train, y_train, accuracy, f1):
         
     print(f"Model metadata saved to {metadata_path}")
     
-def preprocess(train_df, test_df):
-    # TODO - any preprocessing steps (scaling, encoding, etc)
-    return train_df, test_df
+def preprocess(df):    
+    """
+    Cleaning and preprocessing data
+    """
+    
+    # Missing values
+    df = df.replace([np.inf, -np.inf], np.nan)
+    df = df.fillna(df.median(numeric_only=True))
+    
+    # Manual OHE categoricals
+    cat_cols = df.select_dtypes(include=['object', 'category']).columns
+    df = pd.get_dummies(df, columns=cat_cols, drop_first=True)
+    
+    # Print summaries
+    print("Dataframe summary after preprocessing:")
+    print(df.head())
+    print(df.info())
+    print(df.describe())
+    print(df.isna().sum())
+    
+    return df
