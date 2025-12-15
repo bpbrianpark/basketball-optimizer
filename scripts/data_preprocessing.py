@@ -144,7 +144,7 @@ def save_model(model, X_train, y_train, accuracy, f1):
     
 def preprocess(df):    
     """
-    Cleaning and preprocessing data
+    Cleaning and preprocessing data - may not work with cross validation if implemented later?
     """
     
     # Missing values
