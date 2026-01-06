@@ -1,4 +1,6 @@
-def score_shot(stats: dict) -> dict:
+import pandas as pd
+
+def score_shot(stats: pd.DataFrame) -> dict:
     """
     Analyzes basketball shooting stats and return score with positive and negative messages
 
