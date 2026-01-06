@@ -2,6 +2,8 @@ import pandas as pd
 import joblib
 import os
 import json
+import numpy as np
+from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
@@ -23,7 +25,7 @@ def load_data():
     try:
         labels_df = pd.read_csv('../data/raw/labels.csv')
     except FileNotFoundError: 
-        raise RuntimeError(f"features.csv was not found") 
+        raise RuntimeError(f"labels.csv was not found") 
     except Exception as e: 
         raise RuntimeError(f"Error in loading csv file: {e}")
     
@@ -77,17 +79,17 @@ def evaluation(model, test_df):
     
     # predictions + probailities of predictions for positive class
     predictions = model.predict(X_test)
-    predict_probabililties = model.predict_proba(X_test)
+    predict_probabilities = model.predict_proba(X_test)
     
     # Get positive and negative probabilities - may be useful later
-    pos_prob = predict_probabililties[:, 1]
-    neg_prob = predict_probabililties[:, 0]
+    pos_prob = predict_probabilities[:, 1]
+    neg_prob = predict_probabilities[:, 0]
     
     # Ensure correct shape of predictions and predict_probabilities
     assert len(predictions) == len(y_test)
-    assert predict_probabililties[0] == len(y_test)
+    assert len(predict_probabilities) == len(y_test) 
     
-    return predictions, predict_probabililties
+    return predictions, predict_probabilities
 
 def evaluate_metrics(y_true, y_pred):
     """
@@ -150,10 +152,19 @@ def preprocess(df):
     # Missing values
     df = df.replace([np.inf, -np.inf], np.nan)
     df = df.fillna(df.median(numeric_only=True))
+
+    if 'label' in df.columns:
+        df['label'] = df['label'].map({'good': 1, 'bad': 0})
+    elif 'shot_made' in df.columns:
+        # If using shot_made column, ensure it's numeric
+        if df['shot_made'].dtype == 'object':
+            df['shot_made'] = df['shot_made'].map({'good': 1, 'bad': 0, 1: 1, 0: 0})
     
     # Manual OHE categoricals
     cat_cols = df.select_dtypes(include=['object', 'category']).columns
-    df = pd.get_dummies(df, columns=cat_cols, drop_first=True)
+    cat_cols = [col for col in cat_cols if col not in ['shot_id', 'label', 'shot_made']]
+    if len(cat_cols) > 0:
+        df = pd.get_dummies(df, columns=cat_cols, drop_first=True)
     
     # Print summaries
     print("Dataframe summary after preprocessing:")
