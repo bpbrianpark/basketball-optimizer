@@ -7,7 +7,7 @@ import pandas as pd
 from models.pose_pipeline import PosePipeline
 from scripts.score_data import score_shot
 
-def save_first_frame(video_path, output_name="first_frame.jpg"):
+def save_first_frame(video_path, output_name="first_frame.png"):
     cap = cv2.VideoCapture(video_path)
     success, frame = cap.read()
     if success:
@@ -27,10 +27,17 @@ def main():
     pipeline = PosePipeline()
     results_df = pipeline.process_video(args.video_path)
 
-    score, feedback = score_shot(results_df)
+    result = score_shot(results_df)
+    score = result['score']
+    feedback = result 
     print(f"\n--- Analysis Results ---")
-    print(f"Final Score: {score:.2f}")
-    print(f"Feedback: {feedback}\n")
+    print(f"Final Score: {result['score']:.2f}")
+    print(f"\nStrengths:")
+    for strength in result['strengths']:
+        print(f"  - {strength}")
+    print(f"\nWeaknesses:")
+    for weakness in result['weaknesses']:
+        print(f"  - {weakness}")
 
     save_first_frame(args.video_path)
 
