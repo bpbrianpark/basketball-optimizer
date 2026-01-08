@@ -46,8 +46,11 @@ def save_frame_angles(df: pd.DataFrame, shot_id: str, destination: Path) -> None
     df = df.copy()
     df.insert(0, "shot_id", shot_id)
 
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(destination, index=False)
+    try:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(destination, index=False)
+    except Exception as e:
+        print(f"Error saving frame angles to CSV: {e}")
 
 def compute_joint_angles(pose_keypoints: list[float]) -> dict[str, float]:
     """Placeholder for vector math that converts raw keypoints into angles."""
