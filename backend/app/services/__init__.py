@@ -20,8 +20,16 @@ class ModelService:
         return self.classifier is not None
     
     def feature_extraction(self, df):
-        """Summary Statistics for training, returns feature array"""
-        # TODO
+        """Statistics for training, returns feature array"""
+        
+        # Takes only the necessary columns
+        columns = ['elbow_angle', 'shoulder_angle', 'wrist_angle']
+        filtered_data = df[columns]
+        
+        # Flattern to numpy array
+        feature_array = filtered_data.values.flatten().reshape(1, -1)
+    
+        return feature_array
         
     def predict(self, features):
         """Generates prediction/score"""
