@@ -20,15 +20,31 @@ class ModelService:
         return self.classifier is not None
     
     def feature_extraction(self, df):
-        # SUMMARY STATISTICS NEED TO BE DETERMINED ELSEWHERE FIRST
         """Statistics for training, returns feature array"""
         
         # Takes only the necessary columns
         columns = ['elbow_angle', 'shoulder_angle', 'wrist_angle']
-        filtered_data = df[columns]
-        b 
-        # Flattern to numpy array
-        feature_array = filtered_data.values.flatten().reshape(1, -1)
+        
+        # Compute summary statistics - may change later
+        stats = []
+        for col in target_columns:
+            if col in df.columns:
+                mu = df[col].mean()
+                sigma = df[col].std()
+                
+                if pd.isna(mu): 
+                    mu = 0.0
+                if pd.isna(sigma): 
+                    sigma = 0.0
+                
+                stats.extend([mu, sigma])
+            else:
+                stats.extend([0.0, 0.0])
+                
+        features = stats # TODO: May add release_frame later (depends on how it is implemented elsewhere) 
+        
+        # Flatten to numpy array
+        feature_array = stats.values.flatten().reshape(1, -1)
     
         return feature_array
         
