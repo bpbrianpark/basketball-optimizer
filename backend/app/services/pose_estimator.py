@@ -3,8 +3,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
+import cv2
 import numpy as np
 from fastapi import UploadFile
 from scripts.score_data import score_shot
@@ -37,6 +38,49 @@ class PoseEstimatorService:
                     "ultralytics is not installed. Install dependencies to enable pose estimation."
                 )
             self._model = YOLO(self.model_path)
+
+    def _iter_frames(self, video_path: str, frame_skip: int = 3) -> Iterator[np.ndarray]:
+        cap = cv2.VideoCapture(str(video_path))
+        if not cap.isOpened():
+            raise ValueError(f"Could not open video at: {video_path}.")
+        
+        try:
+            frame_index = 0
+            while True:
+                ret, frame = cap.read()
+                if (not ret):
+                    break
+
+                # Yield every 3 frames by default
+                if frame_index % frame_skip == 0:
+                    yield self._extract_keypoints(frame)
+                frame_index +=1
+        finally:
+            cap.release()
+    
+    def _extract_keypoints(self, frame: np.ndarray) -> np.ndarray | None:
+        """
+            Extracts the keypoint coordinates + confidence scores from a single frame.
+        """
+
+        results = self._model(frame)
+        if (not results or len(results) == 0):
+            return None
+        
+        result = results[0]
+
+        # If no keypoints / person is detected
+        if (not hasattr(result, 'keypoints') or result.keypoints == None):
+            print("There are no person detected.")
+            return None
+        
+        keypoints_data = result.keypoints.data
+        if (keypoints_data == None or len(keypoints_data) == 0):
+            print("The detected person has no keypoint data.")
+            return None
+
+        return keypoints_data
+
 
     async def process_upload(self, video: UploadFile) -> dict:
         """Persist the uploaded file and delegate to main analysis pipeline."""
