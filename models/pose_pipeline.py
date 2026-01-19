@@ -32,9 +32,12 @@ class PosePipeline:
 
     # Select main person closest to camera
     def select_main_person(self, frame):
-
         boxes = frame.boxes.xyxy.cpu().numpy()  # shape: (N, 4)
-
+        
+        # Handle case when no person is detected
+        if len(boxes) == 0:
+            return None
+        
         areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
         main_idx = np.argmax(areas)
 
@@ -53,6 +56,10 @@ class PosePipeline:
 
             #select shooter
             person_idx = self.select_main_person(frame)
+            
+            # Skip frame if no person detected
+            if person_idx is None:
+                continue
 
             keypoints = frame.keypoints.xy[person_idx].cpu().numpy()
             confs = frame.keypoints.conf[person_idx].cpu().numpy()
