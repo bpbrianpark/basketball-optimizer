@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, HTTPException
 from backend.app.services.inference_service import InferenceService
 from pathlib import Path
 import uuid
@@ -20,14 +20,9 @@ async def upload_video(file: UploadFile = File(...)):
 def analyze_video(video_id: str):
     video_path = service.get_video(video_id)
     if not video_path:
-        return {"error": "Video not found"}
+        raise HTTPException(status_code=404, detail="Video not found")
     # result = service.process_video(video_path)
-    fake_result = {
-        "video_id": video_id,
-        "status": "completed",
-        "frames_analyzed": 1,
-        "model": "placeholder-v1"
-    }
+    fake_result = {"score": 75}
     result_id = str(uuid.uuid4())
     service.save_result(result_id, fake_result)
     return {"result_id": result_id}
@@ -36,5 +31,5 @@ def analyze_video(video_id: str):
 def get_result(result_id: str):
     result = service.get_result(result_id)
     if not result:
-        return {"error": "Result not found"}
+        raise HTTPException(status_code=404, detail="Result not found")
     return result
