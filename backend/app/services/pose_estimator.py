@@ -1,7 +1,6 @@
 """Pose estimation service layer stubs."""
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -62,6 +61,10 @@ class PoseEstimatorService:
         """
             Extracts the keypoint coordinates + confidence scores from a single frame.
         """
+        # Note from Brian: Ensure model is loaded before use (lazy loading)
+        # This prevents crashes when _extract_keypoints is called before model initialization
+        if self._model is None:
+            self._load_model()
 
         results = self._model(frame)
         if (not results or len(results) == 0):
