@@ -40,8 +40,12 @@ def get_video_properties(video_path: str) -> dict | None:
 
 STANDARDIZED_DIR = Path("data/processed/standardized")
 
-def ensure_standardized_dir() -> None:
+def ensure_standardized_dir():
     STANDARDIZED_DIR.mkdir(parents=True, exist_ok=True)
+    
+def video_conversion():
+    """Resize/resamples frames and write to output file to standardize videos"""
+    # TODO
 
 if __name__ == "__main__":    
     if len(sys.argv) > 1:
