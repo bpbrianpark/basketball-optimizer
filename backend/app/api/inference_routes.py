@@ -29,6 +29,7 @@ def analyze_video(video_id: str):
 
 @router.get("/results/{result_id}")
 def get_result(result_id: str):
+    """Returns the inference result for a given result ID"""
     result = service.get_result(result_id)
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
