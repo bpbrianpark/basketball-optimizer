@@ -8,6 +8,12 @@ TARGET_WIDTH = 1280
 TARGET_HEIGHT = 720
 TARGET_EXT = ".mp4"
 
+STANDARDIZED_DIR = Path("data/processed/standardized")
+RAW_DIR = Path("data/raw")
+OUTPUT_DIR = Path("data/processed")
+
+EXTENSIONS = (".mp4", ".mov", ".avi", ".mkv", ".webm")
+
 def get_video_properties(video_path: str) -> dict | None:
     """
     Returns a dict with FPS, resolution, frame count, and duration (seconds)
@@ -38,10 +44,11 @@ def get_video_properties(video_path: str) -> dict | None:
         "duration_sec": float(duration),
     }
 
-STANDARDIZED_DIR = Path("data/processed/standardized")
-
 def ensure_standardized_dir():
     STANDARDIZED_DIR.mkdir(parents=True, exist_ok=True)
+    
+def ensure_raw_dir():
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
     
 def video_conversion():
     """Resize/resamples frames and write to output file to standardize videos"""
