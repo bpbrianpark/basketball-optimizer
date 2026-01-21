@@ -49,10 +49,27 @@ def ensure_standardized_dir():
     
 def ensure_raw_dir():
     RAW_DIR.mkdir(parents=True, exist_ok=True)
+
+def ensure_output_dir():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     
 def video_conversion():
     """Resize/resamples frames and write to output file to standardize videos"""
-    # TODO
+    
+    # Checks if directories exist or not
+    if not RAW_DIR.exists():
+        ensure_raw_dir()
+    if not OUTPUT_DIR.exists():
+        ensure_output_dir()
+    
+    # Gets all video files in the raw directory
+    video_files = sorted(p for p in RAW_DIR.iterdir() if p.is_file() and p.suffix.lower() in EXTENSIONS)
+    
+    if not video_files:
+        print("No video files found in the raw directory.")
+        return
+
+    # TODO - process sample videos, ensure names preserved and verify all videos are processed
 
 if __name__ == "__main__":    
     if len(sys.argv) > 1:
