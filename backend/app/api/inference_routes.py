@@ -21,10 +21,11 @@ def analyze_video(video_id: str):
     video_path = service.get_video(video_id)
     if not video_path:
         raise HTTPException(status_code=404, detail="Video not found")
-    # result = service.process_video(video_path)
-    fake_result = {"score": 75}
     result_id = str(uuid.uuid4())
-    service.save_result(result_id, fake_result)
+    overlay_frames = service.process_video_and_save_overlays(
+        video_path=video_path,
+        result_id=result_id,
+        video_id=video_id)
     return {"result_id": result_id}
 
 @router.get("/results/{result_id}")
