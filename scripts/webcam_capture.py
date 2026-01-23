@@ -246,6 +246,14 @@ class App(ctk.CTk):
                 yield frame
         finally:
             cap.release()
+            
+    def post_video(video_path: str):
+        with open(video_path, "rb") as f:
+            files = {"file": f}
+            response = requests.post(UPLOAD_ENDPOINT, files=files)
+
+    def analyze_video():
+        # TODO
 
 def main():
     app = App()
