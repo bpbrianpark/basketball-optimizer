@@ -248,9 +248,7 @@ class App(ctk.CTk):
             cap.release()
             
     def post_video(video_path: str):
-        with open(video_path, "rb") as f:
-            files = {"file": f}
-            response = requests.post(UPLOAD_ENDPOINT, files=files)
+        # TODO
 
     def analyze_video():
         # TODO
