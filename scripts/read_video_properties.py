@@ -69,8 +69,64 @@ def video_conversion():
         print("No video files found in the raw directory.")
         return
 
-    # TODO - process sample videos, ensure names preserved and verify all videos are processed
-
+    processed = 0
+    
+    # Processes each video file in data/raw
+    for video in video_files:
+        # Open each video with VideoCapture
+        cap = cv2.VideoCapture(str(video))
+        # Skip video if not able to open
+        if not cap.isOpened():
+            print(f"Warning: Could not open video file: {video}")
+            continue
+        
+        # Original video metadata
+        input_fps = cap.get(cv2.CAP_PROP_FPS)
+        input_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        input_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        # Decide how many frames to skip depending on what we are targetting
+        frame_skip = max(1, round(input_fps / TARGET_FPS))
+        
+        # Output path
+        output_path = OUTPUT_DIR / (video.stem + TARGET_EXT)
+        
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        
+        # Write the video with standardized properties
+        writer = cv2.VideoWriter(
+            str(output_path),
+            fourcc,
+            TARGET_FPS,
+            (TARGET_WIDTH, TARGET_HEIGHT)
+        )
+        
+        # For FPS downsampling
+        frame_id = 0
+        
+        while True:
+            ret, frame = cap.read()
+            
+            # Stop when no frames are available
+            if not ret:
+                break
+            
+            # If the current frame is to be kept
+            if frame_id % frame_skip == 0:
+                # Resize and write to output video
+                resized_frame = cv2.resize(frame, (TARGET_WIDTH, TARGET_HEIGHT))
+                writer.write(resized_frame)
+            frame += 1
+        
+        # Release to avoid memory leaks or issues
+        cap.release()
+        writer.release()
+        
+        # Tracks processed videos
+        processed += 1
+        
+    print(f"Processed {processed}/{len(video_files)} videos to standardized format")
+    
 if __name__ == "__main__":    
     if len(sys.argv) > 1:
         video_path = sys.argv[1]
