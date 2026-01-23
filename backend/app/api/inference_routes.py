@@ -33,3 +33,11 @@ def get_result(result_id: str):
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
     return result
+
+@router.get("/videos")
+def post_video():
+    # TODO
+
+@router.get("/videos/{video_id}")
+def analyze_video():
+    # TODO
