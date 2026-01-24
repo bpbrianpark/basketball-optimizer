@@ -50,17 +50,17 @@ async def analyze_video(video_id: str) -> Dict[str, str]:
     if not video_path:
         raise HTTPException(status_code=404, detail="Video not found")
     
-    fake_result = {"score": 75}
     result_id = str(uuid.uuid4())
-    overlay_frames = service.process_video_and_save_overlays(
-        video_path=video_path,
-        result_id=result_id,
-        video_id=video_id)
+    try:
+        service.process_video_and_save_overlays(video_path, result_id, video_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process video: {str(e)}")
+    
     return {"result_id": result_id}
 
 @router.get("/results/{result_id}")
 async def get_result(result_id: str) -> Dict:
-    """Returns the inference result for a given result ID."""
+    """Returns the inference result for a given result ID"""
     result = service.get_result(result_id)
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
