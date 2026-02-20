@@ -32,6 +32,7 @@ models/*.pkl
 models/*.pt
 models/*.json
 !models/__init__.py
+notebooks/*.pt
 
 # Data directories
 data/raw/*
