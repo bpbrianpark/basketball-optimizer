@@ -5,6 +5,7 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, Any
 import sys
+from ml.data_pipeline import compute_joint_angles
 
 project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
@@ -101,7 +102,24 @@ class InferenceService:
             model_path = "yolov8n-pose.pt"
         
         pose_pipeline = PosePipeline(path=str(model_path))
+
         pose_df = pose_pipeline.process_video(video_path)
+        frame_counts = (
+            pose_df[pose_df["confidence"] > 0.5]
+            .groupby("frame")["keypoint"]
+            .count()
+        )
+        best_frame = frame_counts.idxmax()
+
+        frame_data = pose_df[pose_df["frame"] == best_frame]
+        keypoints_array = np.full((17, 2), np.nan)
+        for _, row in frame_data.iterrows():
+            idx = int(row["keypoint"])
+            if 0 <= idx < 17:
+                keypoints_array[idx, 0] = row["x"]
+                keypoints_array[idx, 1] = row["y"]
+
+        angles = compute_joint_angles(keypoints_array, side="right")
         
         result_overlay_dir = self.overlays_dir / result_id
         result_overlay_dir.mkdir(parents=True, exist_ok=True)
