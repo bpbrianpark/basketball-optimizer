@@ -104,7 +104,7 @@ def _extract_point_2d(keypoints: np.ndarray, joint_name: str) -> np.ndarray:
         responsible for extracting the x and y points from a specified joint from a keypoint.
     """
     if joint_name not in KEYPOINT_NAMES:
-        return np.array([np.nana, np.nan], dtype=float)
+        return np.array([np.nan, np.nan], dtype=float)
 
     idx = KEYPOINT_NAMES[joint_name]
     try:
