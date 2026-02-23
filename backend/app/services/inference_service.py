@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict, Any
 import sys
 from ml.data_pipeline import compute_joint_angles
+from scripts.score_data import score_shot
 
 project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
@@ -120,6 +121,7 @@ class InferenceService:
                 keypoints_array[idx, 1] = row["y"]
 
         angles = compute_joint_angles(keypoints_array, side="right")
+        result = score_shot(angles)
         
         result_overlay_dir = self.overlays_dir / result_id
         result_overlay_dir.mkdir(parents=True, exist_ok=True)
@@ -147,12 +149,18 @@ class InferenceService:
                 frame_idx += 1
         finally:
             cap.release()
-        
+    
         result_data = {
             "video_id": video_id,
-            "score": 75,
+            "score": result["score"],
+            "strengths": result["strengths"],
+            "weaknesses": result["weaknesses"],
+            "elbow_angle": angles.get("elbow_angle"),
+            "shoulder_angle": angles.get("shoulder_angle"),
+            "knee_angle": angles.get("knee_angle"),
+            "hip_angle": angles.get("hip_angle"),
             "overlay_frames": frame_paths,
-            "total_frames": frame_idx
+            "total_frames": frame_idx,
         }
         
         self.results_store[result_id] = result_data
