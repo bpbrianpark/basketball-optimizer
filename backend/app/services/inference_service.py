@@ -142,7 +142,7 @@ class InferenceService:
                 
                 frame_file = result_overlay_dir / f"frame_{frame_idx:04d}.jpg"
                 cv2.imwrite(str(frame_file), annotated_frame)
-                frame_paths.append(str(frame_file.relative_to(self.data_dir)))
+                frame_paths.append(f"/overlays/{result_id}/frame_{frame_idx:04d}.jpg")
                 
                 frame_idx += 1
         finally:
