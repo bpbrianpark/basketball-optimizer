@@ -54,6 +54,9 @@ data/labels/*
 *.mp3
 *.wav
 
+# Mobile files
+mobile/
+
 # Environment variables
 .env
 .env.local
