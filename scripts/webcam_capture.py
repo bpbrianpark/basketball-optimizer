@@ -267,7 +267,7 @@ class App(ctk.CTk):
                 # post to url 
                 resp = requests.post(url, files=files, timeout=60)
                 
-            print(f"Upload response received (HTTP {resp.status_code})", flush=True)
+            print(f"Upload response received (HTTP {resp.status_code})")
 
             # Get posted video data
             data = resp.json()
@@ -287,6 +287,30 @@ class App(ctk.CTk):
 
     def analyze_video(self, video_id: str, base_url: str = "http://localhost:8000"):
         """POST to /api/inference/{video_id} to start analysis and return result_id"""
+        
+        # Base URL
+        url = f"{base_url.rstrip('/')}/api/inference/{video_id}"
+        
+        try:
+            # Post video for analysis
+            resp = requests.post(url, timeout=60)
+            print(f"Inference response received (HTTP {resp.status_code})", flush=True)
+
+            # Get data
+            data = resp.json()
+            # Get Result ID from data
+            result_id = data.get("result_id")
+            
+            if not result_id:
+                # Raise error if missing result_id
+                raise RuntimeError(f"Inference response missing result_id: {data}")
+
+            return result_id
+
+        except requests.Timeout as e:
+            raise RuntimeError(f"Inference timed out: {e}")
+        except requests.ConnectionError as e:
+            raise RuntimeError(f"Inference connection error: {e}")
 
 def main():
     app = App()
