@@ -4,6 +4,8 @@ import customtkinter as ctk
 import threading
 import numpy as np
 import time
+import requests
+import sys
 from typing import Optional
 from PIL import Image, ImageTk
 
@@ -247,8 +249,41 @@ class App(ctk.CTk):
         finally:
             cap.release()
             
-    def post_video(video_path: str):
-        # TODO
+    def post_video(video_path: str, base_url: str = "http://localhost:8000"):
+        """Posts video to API"""
+        
+        # Raise error if file path does not exist
+        if not os.path.exists(video_path):
+            raise FileNotFoundError(f"Video file not found: {video_path}")
+        
+        # URL to api link
+        url = f"{base_url.rstrip('/')}/api/videos"
+        
+        try:
+            # Open video to upload
+            with open(video_path, "rb") as f:
+                # send payload with video file
+                files = {"file": (os.path.basename(video_path), f, "video/mp4")}
+                # post to url 
+                resp = requests.post(url, files=files, timeout=60)
+                
+            print(f"Upload response received (HTTP {resp.status_code})", flush=True)
+
+            # Get posted video data
+            data = resp.json()
+            # Get video id
+            video_id = data.get("video_id")
+            
+            # Error if no video id
+            if not video_id:
+                raise RuntimeError(f"Upload response missing video_id: {data}")
+
+            return video_id
+
+        except requests.Timeout as e:
+            raise RuntimeError(f"Upload timed out: {e}")
+        except requests.ConnectionError as e:
+            raise RuntimeError(f"Upload connection error: {e}")
 
     def analyze_video():
         # TODO
