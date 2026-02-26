@@ -249,8 +249,8 @@ class App(ctk.CTk):
         finally:
             cap.release()
             
-    def post_video(video_path: str, base_url: str = "http://localhost:8000"):
-        """Posts video to API"""
+    def post_video(self, video_path: str, base_url: str = "http://localhost:8000"):
+       """POST the recorded video file to /api/videos and return video_id"""
         
         # Raise error if file path does not exist
         if not os.path.exists(video_path):
@@ -285,8 +285,8 @@ class App(ctk.CTk):
         except requests.ConnectionError as e:
             raise RuntimeError(f"Upload connection error: {e}")
 
-    def analyze_video():
-        # TODO
+    def analyze_video(self, video_id: str, base_url: str = "http://localhost:8000"):
+        """POST to /api/inference/{video_id} to start analysis and return result_id"""
 
 def main():
     app = App()
