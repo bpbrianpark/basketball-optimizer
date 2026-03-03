@@ -3,6 +3,9 @@ from backend.app.services.inference_service import InferenceService
 from pathlib import Path
 import uuid
 from typing import Dict
+import numpy as np
+import cv2
+from fastapi.responses import Response
 
 router = APIRouter()
 service = InferenceService()
@@ -65,3 +68,15 @@ async def get_result(result_id: str) -> Dict:
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
     return result
+
+@router.get("/result/{result_id}/overlay")
+async def get_overlay(result_id, frame = 0):
+    """Return the overlay image for a given result ID and frame index."""
+    overlay = service.get_overlay(result_id, frame)
+    if overlay is None:
+        raise HTTPException(status_code=404, detial ="Overlay not found")
+    success, buffer = cv2.imencode(".jpg", overlay)
+    if not success:
+        raise HTTPException(status_code = 500, detail= "Failed to encode overlay image")
+    
+    return Response(content=buffer.tobytes(), media_type="image/jpeg")
