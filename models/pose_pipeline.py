@@ -5,6 +5,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
+from scripts.data_pipeline import compute_joint_angles
+
 project_root = Path(__file__).parent.parent if '__file__' in globals() else Path().resolve().parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
@@ -20,7 +22,6 @@ class PosePipeline:
         
     # Loads YOLOv8 with error handling
     def _load_model(self):
-
         try:
             self.model = YOLO(self.path) 
             print("Model loaded successfully.") 
@@ -75,9 +76,41 @@ class PosePipeline:
 
         return pd.DataFrame(rows)
 
-        
+    def process_angles(self, video_path: str, side: str = "right"):
+        df = self.process_video(video_path) 
+            
+        angle_rows = [] # list to hold angle data for each frame
+        current_frame = None # track current frame number
+        kp = np.full((17, 2), np.nan, dtype=float) # initialize keypoint array with NaN
+            
+        # Go through entire dataframe and compute angles for each frame, handling missing keypoints with NaN
+        for row in df.itertuples(index=False):
+            # Extract frame number and keypoint index
+            frame = int(row.frame)
+            keypoint = int(row.keypoint)
 
+            # If not current frame, set frame we found to current frame
+            if current_frame is None:
+                current_frame = frame
+            # Otherwise, if we encounter a new frame, compute angles for the previous frame and reset keypoint array
+            elif frame != current_frame:
+                angles = compute_joint_angles(kp, side=side)
+                angle_rows.append({"frame": current_frame, **angles})
+                kp[:] = np.nan
+                current_frame = frame
 
+            # Only populate keypoint array if keypoint index is valid (0-16 for COCO format)
+            if 0 <= keypoint < 17:
+                kp[k, 0] = float(row.x)
+                kp[k, 1] = float(row.y)
 
+        # Compute angle for last frame
+        if current_frame is not None:
+            angles = compute_joint_angles(kp, side=side)
+            angle_rows.append({"frame": current_frame, **angles})
 
-        
+        # Return angles
+        return pd.DataFrame(angle_rows)
+                        
+        def _iter_frames(video_path):
+            # TODO

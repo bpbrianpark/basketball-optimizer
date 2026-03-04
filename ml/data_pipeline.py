@@ -92,6 +92,7 @@ def compute_joint_angles(pose_keypoints: np.ndarray, side:str = "right") -> dict
     
     if side != "left" and side!= "right":
         raise ValueError("side paramter can only be 'left' or 'right'!")
+    
     return {
         "elbow_angle": _compute_elbow_angle(pose_keypoints, side),
         "knee_angle": _compute_knee_angle(pose_keypoints, side),
