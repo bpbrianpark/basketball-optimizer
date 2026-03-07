@@ -193,3 +193,7 @@ def _compute_hip_angle(keypoints: np.ndarray, side:str) -> float:
     hip = _extract_point_2d(keypoints, f"{side}_hip")
     shoulder = _extract_point_2d(keypoints, f"{side}_shoulder")
     return _angle_between(knee, hip, shoulder)
+
+def link_features_labels():
+    """Links Features and Labels together, handling any missing inputs for ML training"""
+    # TODO
