@@ -8,11 +8,12 @@ __pycache__/
 env/
 venv/
 .venv/
+./venv/
 
 # Environment variables
 .env
 .env.local
 
-.github./
+.github/
 .git/
 data/
