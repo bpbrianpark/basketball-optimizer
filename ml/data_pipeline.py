@@ -196,4 +196,21 @@ def _compute_hip_angle(keypoints: np.ndarray, side:str) -> float:
 
 def link_features_labels():
     """Links Features and Labels together, handling any missing inputs for ML training"""
-    # TODO
+    
+    # Rename files if csvs are in different location; additonally we can input at args if better
+    df1 = pd.read_csv("'../data/raw/features.csv")
+    df2 = pd.read_csv("../data/raw/labels.csv")
+    
+    # Ensure that both dataframes have the 'shot_id' column for merging
+    if "shot_id" not in df1.columns or "shot_id" not in df2.columns:
+        raise ValueError("Both CSV files must contain 'shot_id' column for merging.")
+    
+    # Only merge on the 'shot_id' column, using an inner join to keep only matching records
+    # Any external records are not kept; if there are missing shot_id in either df, those records will be dropped
+    df_merged = pd.merge(df1, df2, on="shot_id", how="inner")
+    
+    # Write the merged dataframe to a new CSV file; this will be the dataset used for ML training
+    df_merged.to_csv("../data/processed/linked_features_labels.csv", index=False)
+    
+    return df_merged
+    
