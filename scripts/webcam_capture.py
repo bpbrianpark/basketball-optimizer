@@ -4,6 +4,8 @@ import customtkinter as ctk
 import threading
 import numpy as np
 import time
+import requests
+import sys
 from typing import Optional
 from PIL import Image, ImageTk
 
@@ -246,6 +248,69 @@ class App(ctk.CTk):
                 yield frame
         finally:
             cap.release()
+            
+    def post_video(self, video_path: str, base_url: str = "http://localhost:8000"):
+       """POST the recorded video file to /api/videos and return video_id"""
+        
+        # Raise error if file path does not exist
+        if not os.path.exists(video_path):
+            raise FileNotFoundError(f"Video file not found: {video_path}")
+        
+        # URL to api link
+        url = f"{base_url.rstrip('/')}/api/videos"
+        
+        try:
+            # Open video to upload
+            with open(video_path, "rb") as f:
+                # send payload with video file
+                files = {"file": (os.path.basename(video_path), f, "video/mp4")}
+                # post to url 
+                resp = requests.post(url, files=files, timeout=60)
+                
+            print(f"Upload response received (HTTP {resp.status_code})")
+
+            # Get posted video data
+            data = resp.json()
+            # Get video id
+            video_id = data.get("video_id")
+            
+            # Error if no video id
+            if not video_id:
+                raise RuntimeError(f"Upload response missing video_id: {data}")
+
+            return video_id
+
+        except requests.Timeout as e:
+            raise RuntimeError(f"Upload timed out: {e}")
+        except requests.ConnectionError as e:
+            raise RuntimeError(f"Upload connection error: {e}")
+
+    def analyze_video(self, video_id: str, base_url: str = "http://localhost:8000"):
+        """POST to /api/inference/{video_id} to start analysis and return result_id"""
+        
+        # Base URL
+        url = f"{base_url.rstrip('/')}/api/inference/{video_id}"
+        
+        try:
+            # Post video for analysis
+            resp = requests.post(url, timeout=60)
+            print(f"Inference response received (HTTP {resp.status_code})", flush=True)
+
+            # Get data
+            data = resp.json()
+            # Get Result ID from data
+            result_id = data.get("result_id")
+            
+            if not result_id:
+                # Raise error if missing result_id
+                raise RuntimeError(f"Inference response missing result_id: {data}")
+
+            return result_id
+
+        except requests.Timeout as e:
+            raise RuntimeError(f"Inference timed out: {e}")
+        except requests.ConnectionError as e:
+            raise RuntimeError(f"Inference connection error: {e}")
 
 def main():
     app = App()
