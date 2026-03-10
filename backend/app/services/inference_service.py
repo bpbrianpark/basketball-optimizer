@@ -139,3 +139,19 @@ class InferenceService:
         
         self.results_store[result_id] = result_data
         self._save_store(self.results_path, self.results_store)
+    
+    def get_overlay(self, result_id:str, frame: int=0) -> np.ndarray | None:
+        result = self.get_result(result_id)
+        if not result:
+            return None
+        overlay_frames = result.get("overlay_frames", [])
+        if frame < 0 or frame >= len(overlay_frames):
+            return None
+        
+        frame_path = self.data_dir / overlay_frames[frame]
+        if not frame_path.exists():
+            return None
+        
+        img = cv2.imread(str(frame_path))
+        return img
+        
