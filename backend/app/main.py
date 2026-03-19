@@ -1,7 +1,7 @@
 """Application entrypoint for the basketball shooting form analyzer."""
 from fastapi import FastAPI
 
-from backend.app.api import analyze_router
+from backend.app.api import analyze_router, videos_router
 from backend.app.api.inference_routes import router as inference_router
 
 
@@ -11,6 +11,7 @@ def create_app() -> FastAPI:
 
     app.include_router(analyze_router, prefix="/api/analyze", tags=["analyze"])
     app.include_router(inference_router, prefix="/api/inference", tags=["inference"])
+    app.include_router(videos_router, prefix="/api", tags=["videos"])
 
     @app.get("/health", tags=["system"])
     async def health_check() -> dict[str, str]:
