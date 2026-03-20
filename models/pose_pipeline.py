@@ -57,7 +57,7 @@ class PosePipeline:
 
 
     # Run YOLO pose estimation on a video and extract pose data
-    def process_video(self, video_path: str):
+    def pose_data(self, video_path: str):
         rows = []
 
         results = self.model(video_path, stream=True)
@@ -88,7 +88,7 @@ class PosePipeline:
         return pd.DataFrame(rows)
 
     def process_angles(self, video_path: str, side: str = "right"):
-        df = self.process_video(video_path) 
+        df = self.pose_data(video_path) 
             
         angle_rows = [] # list to hold angle data for each frame
         current_frame = None # track current frame number
@@ -206,3 +206,7 @@ class PosePipeline:
                 cap.release()
                 if writer is not None:
                     writer.release()
+                    
+    def process_video(video_path: Path | str) -> tuple[pd.DataFrame, list[np.ndarray]]:
+        """Returns data frame and one annotated frame; combined all previous steps"""
+        # TODO
