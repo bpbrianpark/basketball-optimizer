@@ -1,0 +1,58 @@
+name: Backend CI (Ruff)
+
+on:
+    push:
+      paths:
+        - "**/*.py"
+        - ".github/workflows/**"
+    pull_request:
+      paths:
+        - "**/*.py"
+        - ".github/workflows/**"
+
+jobs:
+    ruff: 
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Python 
+              uses: actions/setup-python@v5 
+              with: 
+                python-version: "3.11" 
+                cache: "pip"
+            
+            - name: Install Ruff
+              run: |
+                python -m pip install --upgrade pip
+                pip install ruff
+
+            - name: Ruff lint (backend)
+              working-directory: backend
+              run: ruff check .
+        
+            - name: Ruff format check (backend)
+              working-directory: backend
+              run: ruff format --check .
+
+            - name: Ruff lint (ml)
+              working-directory: ml
+              run: ruff check .
+        
+            - name: Ruff format check (ml)
+              working-directory: ml
+              run: ruff format --check .
+
+            - name: Ruff lint (scripts)
+              working-directory: scripts
+              run: ruff check .
+        
+            - name: Ruff format check (scripts)
+              working-directory: scripts
+              run: ruff format --check .
+
+            - name: Planned tests
+              run: |
+                echo "TODO: add unit tests"
