@@ -112,8 +112,8 @@ class PosePipeline:
 
             # Only populate keypoint array if keypoint index is valid (0-16 for COCO format)
             if 0 <= keypoint < 17:
-                kp[k, 0] = float(row.x)
-                kp[k, 1] = float(row.y)
+                kp[keypoint, 0] = float(row.x)
+                kp[keypoint, 1] = float(row.y)
 
         # Compute angle for last frame
         if current_frame is not None:
@@ -123,90 +123,90 @@ class PosePipeline:
         # Return angles
         return pd.DataFrame(angle_rows)
                         
-        def _iter_frames(self, video_path: str, side: str = "right"):
-            # Open video with OpenCV 
-            cap = cv2.VideoCapture(video_path)
-            if not cap.isOpened():
-                raise ValueError(f"Failed to open video: {video_path}")
+    def _iter_frames(self, video_path: str, side: str = "right"):
+        # Open video with OpenCV 
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            raise ValueError(f"Failed to open video: {video_path}")
+        
+        # Read FPS from video, default to 20 if not available
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        if fps <= 1e-6:
+            fps = 20.0
             
-            # Read FPS from video, default to 20 if not available
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            if fps <= 1e-6:
-                fps = 20.0
+        writer = None
+        
+        try:
+            while True:
+                ok, frame_bgr = cap.read()
+                # Stop if no frame is read (end of video)
+                if not ok:
+                    break
                 
-            writer = None
+                # Run YOLO pose estimation on the frame
+                results = self.model(frame_bgr, verbose=False)
+                r = results[0]
+
+                if r.keypoints is not None and len(r.keypoints.xy) > 0:
+                    # Select main person and extract keypoints
+                    person_idx = self.select_main_person(r)
+                    
+                    if person_idx is not None:    
+                        keypoints = r.keypoints.xy[person_idx].cpu().numpy()
+                        confs = r.keypoints.conf[person_idx].cpu().numpy()
+                        
+                        # Only draw a line if both endpoints have decent confidence
+                        for a, b in COCO_SKELETON:
+                            if confs[a] > 0.2 and confs[b] > 0.2:
+                                xa, ya = int(keypoints[a][0]), int(keypoints[a][1])
+                                xb, yb = int(keypoints[b][0]), int(keypoints[b][1])
+                                cv2.line(frame_bgr, (xa, ya), (xb, yb), (0, 255, 0), 2)
+                                
+                        # Draw a small red dot for each keypoint
+                        for i, (x, y) in enumerate(keypoints):
+                            if confs[i] > 0.2:
+                                cv2.circle(frame_bgr, (int(x), int(y)), 4, (0, 0, 255), -1)
+                                
+                        # Compute angles using helpers
+                        angles = compute_joint_angles(keypoints, side=side)
+                        
+                        # Text placement in the top-left corner
+                        x0, y0 = 20, 30   # starting text position
+                        dy = 25           # vertical spacing per line
+                        
+                        for j, (name, val) in enumerate(angles.items()):
+                            txt = f"{name}: {val:.1f}" if np.isfinite(val) else f"{name}: nan"
+                            # Put text on screen with white color and black outline for better visibility
+                            cv2.putText(
+                                frame_bgr,
+                                txt,
+                                (x0, y0 + j * dy),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.7,                 
+                                (255, 255, 255),   
+                                2,               
+                                cv2.LINE_AA,
+                            )
             
-            try:
-                while True:
-                    ok, frame_bgr = cap.read()
-                    # Stop if no frame is read (end of video)
-                    if not ok:
-                        break
-                    
-                    # Run YOLO pose estimation on the frame
-                    results = self.model(frame_bgr, verbose=False)
-                    r = results[0]
+                # Saving path for video
+                out_path = "../data/output_videos"
+                Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+                h, w = frame_bgr.shape[:2]
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
 
-                    if r.keypoints is not None and len(r.keypoints.xy) > 0:
-                        # Select main person and extract keypoints
-                        person_idx = self.select_main_person(r)
-                        
-                        if person_idx is not None:    
-                            keypoints = r.keypoints.xy[person_idx].cpu().numpy()
-                            confs = r.keypoints.conf[person_idx].cpu().numpy()
-                            
-                            # Only draw a line if both endpoints have decent confidence
-                            for a, b in COCO_SKELETON:
-                                if confs[a] > 0.2 and confs[b] > 0.2:
-                                    xa, ya = int(keypoints[a][0]), int(keypoints[a][1])
-                                    xb, yb = int(keypoints[b][0]), int(keypoints[b][1])
-                                    cv2.line(frame_bgr, (xa, ya), (xb, yb), (0, 255, 0), 2)
-                                    
-                            # Draw a small red dot for each keypoint
-                            for i, (x, y) in enumerate(keypoints):
-                                if confs[i] > 0.2:
-                                    cv2.circle(frame_bgr, (int(x), int(y)), 4, (0, 0, 255), -1)
-                                    
-                            # Compute angles using helpers
-                            angles = compute_joint_angles(keypoints, side=side)
-                            
-                            # Text placement in the top-left corner
-                            x0, y0 = 20, 30   # starting text position
-                            dy = 25           # vertical spacing per line
-                            
-                            for j, (name, val) in enumerate(angles.items()):
-                                txt = f"{name}: {val:.1f}" if np.isfinite(val) else f"{name}: nan"
-                                # Put text on screen with white color and black outline for better visibility
-                                cv2.putText(
-                                    frame_bgr,
-                                    txt,
-                                    (x0, y0 + j * dy),
-                                    cv2.FONT_HERSHEY_SIMPLEX,
-                                    0.7,                 
-                                    (255, 255, 255),   
-                                    2,               
-                                    cv2.LINE_AA,
-                                )
+                # Create writer that saves frames to out_path
+                writer = cv2.VideoWriter(out_path, fourcc, fps, (w, h))
                 
-                    # Saving path for video
-                    out_path = "../data/output_videos"
-                    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-                    h, w = frame_bgr.shape[:2]
-                    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-
-                    # Create writer that saves frames to out_path
-                    writer = cv2.VideoWriter(out_path, fourcc, fps, (w, h))
-                    
-                    if writer is not None:
-                        writer.write(frame_bgr)
-                        
-                    yield frame_bgr
-            finally:
-                # Close video and writer resources
-                cap.release()
                 if writer is not None:
-                    writer.release()
+                    writer.write(frame_bgr)
                     
-    def process_video(video_path: Path | str) -> tuple[pd.DataFrame, list[np.ndarray]]:
+                yield frame_bgr
+        finally:
+            # Close video and writer resources
+            cap.release()
+            if writer is not None:
+                writer.release()
+                    
+    def process_video(self, video_path: Path | str) -> tuple[pd.DataFrame, list[np.ndarray]]:
         """Returns data frame and one annotated frame; combined all previous steps"""
         # TODO
