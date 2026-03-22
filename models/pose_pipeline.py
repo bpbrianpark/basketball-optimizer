@@ -58,6 +58,10 @@ class PosePipeline:
 
     # Run YOLO pose estimation on a video and extract pose data
     def pose_data(self, video_path: str):
+        video_path = Path(video_path)
+        if not video_path.exists():
+            raise FileNotFoundError(f"Video file not found: {video_path}")
+
         rows = []
 
         results = self.model(video_path, stream=True)
@@ -124,6 +128,10 @@ class PosePipeline:
         return pd.DataFrame(angle_rows)
                         
     def _iter_frames(self, video_path: str, side: str = "right"):
+        video_path = Path(video_path)
+        if not video_path.exists():
+            raise FileNotFoundError(f"Video file not found: {video_path}")
+        
         # Open video with OpenCV 
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
@@ -134,7 +142,14 @@ class PosePipeline:
         if fps <= 1e-6:
             fps = 20.0
             
-        writer = None
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        out_path = Path("../data/output_videos/annotated.mp4")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        writer = cv2.VideoWriter(str(out_path), fourcc, fps, (width, height))
         
         try:
             while True:
@@ -187,15 +202,6 @@ class PosePipeline:
                                 2,               
                                 cv2.LINE_AA,
                             )
-            
-                # Saving path for video
-                out_path = "../data/output_videos"
-                Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-                h, w = frame_bgr.shape[:2]
-                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-
-                # Create writer that saves frames to out_path
-                writer = cv2.VideoWriter(out_path, fourcc, fps, (w, h))
                 
                 if writer is not None:
                     writer.write(frame_bgr)
@@ -209,4 +215,6 @@ class PosePipeline:
                     
     def process_video(self, video_path: Path | str) -> tuple[pd.DataFrame, list[np.ndarray]]:
         """Returns data frame and one annotated frame; combined all previous steps"""
-        # TODO
+        angles_df = self.process_angles(video_path)
+        overlay_frames = list(self._iter_frames(video_path))
+        return angles_df, overlay_frames
